@@ -32,6 +32,11 @@ display(median_performance_df)
 
 ```
 
+## Summary
+The `Ensembling` class automates data preparation, model selection, evaluation, ensemble building, and interpretability. It provides robust model comparison and visualization tools, making it suitable for heart failure prediction analysis with multiple random states.
+
+The `run_ensemble_pipeline` function initiates the Ensembling class and handles the performance consolidation and visualization of the ensemble learning method across random states. 
+
 ## Class Initialization (`__init__`)
 - Initializes the class with parameters such as random state, validation/test split proportions, and model-related attributes.
 - Sets up an empty SHAP cache for efficient interpretability calculations.
@@ -124,10 +129,5 @@ display(median_performance_df)
 
 ### `plot_median_pr_curve(df, num_points=100)`
 - Plots the median Precision-Recall curve across random states.
-
-## Summary
-The `Ensembling` class automates data preparation, model selection, evaluation, ensemble building, and interpretability. It provides robust model comparison and visualization tools, making it suitable for heart failure prediction analysis with multiple random states.
-
-The `run_ensemble_pipeline` function initiates the Ensembling class and handles the performance consolidation and visualization of the ensemble learning method across random states. 
 
 
