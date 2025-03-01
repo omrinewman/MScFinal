@@ -1,6 +1,4 @@
-# Ensembling Class
-
-## Overview
+# Ensembling Class Overview
 The `Ensembling` class is designed for training, evaluating, and interpreting ensemble models for heart failure prediction. It supports multiple base models, builds weighted and blended ensemble models, and incorporates SHAP interpretability for feature importance analysis. The class automates data preprocessing, model training, performance evaluation, and SHAP analysis across multiple random states.
 
 ## Installation
