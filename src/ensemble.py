@@ -207,7 +207,7 @@ class Ensembling:
 
         for model_name, model_info in self.best_models.items():
             model = model_info['model']
-            model.fit(X_train, y_train)
+            # model.fit(X_train, y_train)
             
             evaluation = self._evaluate_model_performance(model, X_val, y_val)
             evaluation['Model'] = model_name
@@ -235,7 +235,7 @@ class Ensembling:
 
         for model_name, model_info in self.best_models.items():
             model = model_info['model']
-            model.fit(X_train, y_train)
+            # model.fit(X_train, y_train)
             performance_data[model_name] = self._evaluate_model_performance(model, X_test, y_test)
 
         return performance_data
