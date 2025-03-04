@@ -11,6 +11,7 @@ pip install -r requirements.txt
 ## Dataset
 The dataset used in this project is publicly available on [Kaggle](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data). It includes 918 patient data observations from five different countries, original sources can be found in the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/45/heart+disease).
 
+The data should be downloaded to the same directory where you will run the `Ensemble` Pipeline.  
 ## Usage
 ### Running the Pipeline
 To execute the full pipeline across multiple random states:
