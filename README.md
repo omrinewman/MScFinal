@@ -24,9 +24,9 @@ random_seed = 500
 num_random_states = 5
 
 performance_metrics_df, median_performance_df = run_ensemble_pipeline(Ensembling, 
-                                              data_path = data_path, 
-                                              random_seed = random_seed, 
-                                              num_random_states = num_random_states)
+                                                                      data_path = data_path, 
+                                                                      random_seed = random_seed, 
+                                                                      num_random_states = num_random_states)
 
 display(performance_metrics_df)
 display(median_performance_df)
