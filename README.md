@@ -1,19 +1,19 @@
 # Ensembling Class Overview
 The `Ensembling` class is designed for training, evaluating, and interpreting ensemble models for heart failure prediction. It supports three base models ( Random Forest, XGBoost, and MLP), combines them to build weighted and blended ensemble models, and incorporates SHAP interpretability for feature importance analysis. The class automates data preprocessing, model training, performance evaluation, and SHAP analysis across multiple random states.
 
-## Installation
+# Installation
 To use this repository, ensure you have Python and install the required dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Dataset
+# Dataset
 The dataset used in this project is publicly available on [Kaggle](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data). It includes 918 patient data observations from five different countries, original sources can be found in the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/45/heart+disease).
 
 The data should be downloaded to the same directory where you will run the `Ensembling` Pipeline.  
-## Usage
-### Running the Pipeline
+# Usage
+## Running the Pipeline
 To execute the full pipeline across multiple random states:
 ```python
 from pipeline import run_ensemble_pipeline
@@ -38,7 +38,7 @@ The `Ensembling` class automates data preparation, model selection, evaluation, 
 
 The `run_ensemble_pipeline` function initiates the Ensembling class and handles the performance consolidation and visualization of the ensemble learning method across random states. 
 
-## Class Initialization (`__init__`)
+### Class Initialization (`__init__`)
 - Initializes the class with parameters such as random state, validation/test split proportions, and model-related attributes.
 - Sets up an empty SHAP cache for efficient interpretability calculations.
 
