@@ -1,6 +1,5 @@
 # ensembling.py
 
-
 # Data Handling & Numerical Operations
 import numpy as np
 import pandas as pd
@@ -56,9 +55,6 @@ class Ensembling:
         Args:
         - X: The feature dataset.
         - y: The target variable.
-        - final_test_size (float): Proportion of the dataset for the final evaluation.
-        - base_test_size (float): Proportion of the dataset for testing base models.
-        - meta_validation_size (float): Proportion of the dataset for training the meta model.
         """
         # Initial split: Separate out the final evaluation set
         X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
@@ -81,7 +77,8 @@ class Ensembling:
     
     def generate_model_variants(self):
         """
-        Prepares model configurations for use with GridSearchCV.
+        Prepares model configurations for use with GridSearchCV by defining hyperparameter grids 
+        for Random Forest, XGBoost, and MLP base models. 
         """
 
         self.model_configs = {
@@ -108,6 +105,13 @@ class Ensembling:
         }
     
     def select_best_variant(self, X_train, y_train, n_splits=5):
+        """
+        Uses cross-validation and `GridSearchCV` to select the best hyperparameter configuration for each base model.
+
+        Args:
+        - X_train: Training set features.
+        - y_train: Training set labels.
+        """
         
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_state)
         best_models = {}
@@ -142,7 +146,13 @@ class Ensembling:
     
     def _evaluate_model_performance(self, model, X_test, y_test):
         """
-        Helper function to evaluate the performance of a model on the test set.
+        Helper function to evaluate the performance of a model by computing classification 
+        metrics, ROC, and Precision-Recall curves, and identifies misclassified samples.
+
+        Args:
+        - model: The model instance being evaluated.
+        - X_test: Test set features.
+        - y_test: Test set labels. 
         """
         y_pred = model.predict(X_test)
         y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
@@ -190,7 +200,7 @@ class Ensembling:
             'misclassified_indices': misclassified_indices
         }
   
-    def evaluate_best_variant_on_validation(self, X_train, y_train, X_val, y_val):
+    def evaluate_best_variant_on_validation(self, X_val, y_val):
         """
         Evaluate the best model variants on the validation set and store results.
         
@@ -198,8 +208,6 @@ class Ensembling:
         and then stores the results in the respective class attributes.
         
         Args:
-        - X_train: Training set features.
-        - y_train: Training set labels.
         - X_val: Validation set features.
         - y_val: Validation set labels.
         """
@@ -207,7 +215,6 @@ class Ensembling:
 
         for model_name, model_info in self.best_models.items():
             model = model_info['model']
-            # model.fit(X_train, y_train)
             
             evaluation = self._evaluate_model_performance(model, X_val, y_val)
             evaluation['Model'] = model_name
@@ -217,7 +224,7 @@ class Ensembling:
             data['Model']: {'indices': data['misclassified_indices']} for data in performance_data
         }
     
-    def evaluate_base_models_on_test(self, X_train, y_train, X_test, y_test):
+    def evaluate_base_models_on_test(self, X_test, y_test):
         """
         Evaluate the best model variants on the test set and return results.
         
@@ -225,8 +232,6 @@ class Ensembling:
         and then stores the results in the respective class attributes.
         
         Args:
-        - X_train: Training set features.
-        - y_train: Training set labels.
         - X_test: Test set features.
         - y_test: Test set labels.
         """
@@ -235,7 +240,6 @@ class Ensembling:
 
         for model_name, model_info in self.best_models.items():
             model = model_info['model']
-            # model.fit(X_train, y_train)
             performance_data[model_name] = self._evaluate_model_performance(model, X_test, y_test)
 
         return performance_data
@@ -261,6 +265,9 @@ class Ensembling:
         """
         Extracts the unique misclassified samples of each baseline model from X_val into a dictionary for easier comparison
         with samples from X_test. 
+
+        Args:
+        - X_val: Validation set features.
         """
         # Use set intersection to find common misclassified samples across all models
         common_misclassified_indices = set(self.misclassified_samples[next(iter(self.misclassified_samples))]['indices'])
@@ -285,8 +292,9 @@ class Ensembling:
         Calculate the Euclidean distances from each sample in the test set to the median of
         misclassified samples, weighted by feature importances.
 
-        Returns:
-            dict: A dictionary with model names as keys and a list of distances for each test sample as values.
+        Args:
+        - X_val: Validation set features.
+        - X_test: Test set features. 
         """
 
         feature_importances = self._extract_feature_importance()
@@ -322,10 +330,8 @@ class Ensembling:
         Calculate normalized weights from distances for each test sample.
 
         Args:
-            distances_dict (dict): A dictionary where keys are model names and values are lists of distances for each test sample.
+        - distances_dict (dict): A dictionary where keys are model names and values are lists of distances for each test sample.
 
-        Returns:
-            dict: A dictionary with normalized weights for each model, corresponding to each test sample.
         """
         # Initialize a dictionary to store the normalized weights for each model
         normalized_weights_dict = {model: [] for model in distances_dict}
@@ -352,9 +358,6 @@ class Ensembling:
         Args:
         - X_test: Test set features.
         - weights: Dictionary of weights for each model.
-
-        Returns:
-        - Tuple of two elements: (ensemble_predictions, ensemble_probabilities)
         """
         best_model_instances = self._extract_best_models()
 
@@ -384,6 +387,11 @@ class Ensembling:
     def _evaluate_weighted_ensemble_performance(self, y_pred, y_proba, y_test):
         """
         Evaluate the performance of the weighted ensemble model on the test set.
+
+        Args:
+        - y_pred: Predicted test set labels.
+        - y_proba: Predicted probabilities of the test set.
+        - y_test: Actual test set labels.
         """
         roc_curve_data = {'fpr': None, 'tpr': None, 'roc_auc': None}
         pr_curve_data = {'precision': None, 'recall': None, 'pr_auc': None}
@@ -429,10 +437,9 @@ class Ensembling:
         """
         Generate meta-features using the best variants of the base models.
         This function predicts with each base model and stacks the predictions.
+        
         Args:
         - X: Data to generate meta-features for (either X_val_scaled or X_test_scaled).
-        Returns:
-        - A numpy array of meta-features.
         """
         meta_features = []
         for model_info in self.best_models.values():
@@ -445,12 +452,11 @@ class Ensembling:
     def evaluate_meta_model_with_cv(self, X_val, y_val, X_test, y_test, n_splits=5):
         """
         Trains a meta-model with cross-validation and evaluates its performance.
+        
         Args:
         - X_val, y_val: Validation features and labels for training the meta-model.
         - X_test, y_test: Test features and labels for evaluating the meta-model.
         - n_splits: Number of splits for cross-validation.
-        Returns:
-        - A dictionary with performance metrics and the trained meta-model.
         """
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_state)
         
@@ -489,6 +495,11 @@ class Ensembling:
     def run_weighted_ensemble(self, X_val, X_test, y_test):
         """
         Run the weighted ensemble on the test set and calculate performance.
+
+        Args:
+        - X_val: Validated set features.
+        - X_test: Test set features.
+        - y_test: Test set labels.
         """
         # print(f"Starting weighted ensemble run on random state {self.random_state}")
 
@@ -541,12 +552,9 @@ class Ensembling:
         Calculate SHAP values with caching to avoid redundant computations.
         
         Args:
-            model: Trained model for which to calculate SHAP values.
-            X: Feature data to use for SHAP calculations.
-            model_name: Name of the model to check in the cache.
-            
-        Returns:
-            shap_values: SHAP values calculated for the given model and data.
+        - model: Trained model for which to calculate SHAP values.
+        - X: Feature data to use for SHAP calculations.
+        - model_name: Name of the model to check in the cache.
         """
         if model_name in self.shap_cache:
             return self.shap_cache[model_name]
@@ -564,22 +572,19 @@ class Ensembling:
 
     def run_models(self, X, y, n_splits=5):
         """
-        Run the pipeline for training and evaluating the base models, weighted ensemble, and blended ensemble.
+        Initiates training and evaluating the base models, weighted ensemble, and blended ensemble.
         
         Args:
         - X, y: Features and target variable.
         - n_splits: Number of splits for cross-validation in the meta model.
-        
-        Returns:
-        - A dictionary containing the performance metrics and SHAP values for each ensemble model and base models.
         """
         X_train, X_val, X_test, y_train, y_val, y_test = self.split_data(X, y)
 
         # Generate model variants and select best model variant
         self.generate_model_variants()
         self.select_best_variant(X_train, y_train, n_splits=n_splits)
-        self.evaluate_best_variant_on_validation(X_train, y_train, X_val, y_val)
-        base_performance = self.evaluate_base_models_on_test(X_train, y_train, X_test, y_test)
+        self.evaluate_best_variant_on_validation(X_val, y_val)
+        base_performance = self.evaluate_base_models_on_test(X_test, y_test)
 
         # Initialize a dictionary to store SHAP values for all models
         shap_values_dict = {"base_models": {}}
@@ -613,6 +618,10 @@ class Ensembling:
     def run_pipeline(self, random_states, df):
         """
         Run pipeline for each state in random_states and store results in dictionaries.
+
+        Args:
+        - random_states: List of random states used to run the pipeline.
+        - df: Heart failure CSV data as a pabdas Dataframe. 
         """
         # Preprocess data by creating dummy variables
         dummy_df = pd.get_dummies(df, columns=['Sex', 'ChestPainType', 'FastingBS', 
@@ -661,6 +670,11 @@ class Ensembling:
     def consolidate_performance_metrics(self, weighted_ensemble_dict, blended_ensemble_dict, baseline_dict):
         """
         Consolidates performance metrics across random states for each model into a DataFrame.
+
+        Args:
+        - weighted_ensemble_dict: Dictionary of weighted ensemble performance results across random states
+        - blended_ensemble_dict: Dictionary of blended ensemble performance results across random states
+        - baseline_dict: Nested dictionary of base models performance results across random states
         """
         data_list = []
 
@@ -705,6 +719,11 @@ class Ensembling:
     def aggregate_confusion_and_roc(self, weighted_ensemble_dict, blended_ensemble_dict, baseline_dict):
         """
         Aggregates confusion matrices, ROC curves, and PR curves across random states for each model.
+
+        Args:
+        - weighted_ensemble_dict: Dictionary of weighted ensemble performance results across random states
+        - blended_ensemble_dict: Dictionary of blended ensemble performance results across random states
+        - baseline_dict: Nested dictionary of base models performance results across random states
         """
         aggregation = {
             'Model': [],
@@ -748,7 +767,7 @@ class Ensembling:
         """
         Plot median confusion matrices for each model in a grid with integer-adjusted values.
 
-        Parameters:
+        Args:
         - df: Pandas DataFrame containing columns ['Model', 'Confusion Matrix']
         """
         models = df['Model'].unique()
@@ -789,6 +808,10 @@ class Ensembling:
     def plot_median_roc_curve(self, df, num_points=100):
         """
         Plot a median ROC curve across random states for each model.
+
+        Args:
+        - df: Pandas DataFrame containing columns ['Model', 'Confusion Matrix']
+        - num_points: Number of points to consider on the x-axis
         """
         plt.figure(figsize=(8, 6), dpi=300)
         mean_fpr = np.linspace(0, 1, num_points)
@@ -817,6 +840,10 @@ class Ensembling:
     def plot_median_pr_curve(self, df, num_points=100):
         """
         Plot a median Precision-Recall (PR) curve across random states for each model.
+
+        Args:
+        - df: Pandas DataFrame containing columns ['Model', 'Confusion Matrix']
+        - num_points: Number of points to consider on the x-axis
         """
         plt.figure(figsize=(8, 6), dpi=300)
         mean_recall = np.linspace(0, 1, num_points)
@@ -845,9 +872,6 @@ class Ensembling:
         
         Args:
         - shap_values_aggregated: Dictionary containing SHAP values for each random state and model type.
-
-        Returns:
-        - Dictionary of median SHAP values aggregated across random states for each model.
         """
         aggregated_shap = {
             "weighted_ensemble": None,
